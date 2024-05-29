@@ -18,7 +18,7 @@ class _PointsTableWidgetState extends State<PointsTableWidget> {
   void addPoint() {
     setState(() {
       int newIndex = points.length - 1;  // '+'를 제외한 새 인덱스
-      points.insert(newIndex, 'POINT_$newIndex');
+      points.insert(newIndex, '${widget.title}_$newIndex');
     });
   }
 
