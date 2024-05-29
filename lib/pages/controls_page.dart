@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dartros_msgs/geometry_msgs/src/msgs/Quaternion.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dartros_msgs/geometry_msgs/msgs.dart';
@@ -40,18 +41,18 @@ class ControlsWidget extends StatefulWidget {
 
   @override
   State<ControlsWidget> createState() => _ControlsWidget();
-  
+
 }
 
 class _ControlsWidget extends State<ControlsWidget>{
-  
+
   late String imgSrc; //should be get throu rosbridge or smth via setting
   bool isTapped = false;
   late Offset offset;
   Offset _pos = const Offset(0, 0);
   Image? mapimg;
   Uint8List? mapData;
-  final GlobalKey _gkey = GlobalKey(); 
+  final GlobalKey _gkey = GlobalKey();
   MapImgDetail mapDetail = MapImgDetail(0, 0, 0);
   final Key viewerKey = UniqueKey();
   late Size viewerSize;
@@ -59,7 +60,7 @@ class _ControlsWidget extends State<ControlsWidget>{
 
   @override
   void dispose(){
-    if(nodehandle != null){ 
+    if(nodehandle != null){
       sysLog.d('나감.');
     }
     super.dispose();
@@ -70,7 +71,7 @@ class _ControlsWidget extends State<ControlsWidget>{
       double offsetModi = 10;
       // dev.log('controlwidget callback x => $x and y $y');
       _pos = Offset(_pos.dx + x/offsetModi, _pos.dy + y/offsetModi);
-      sysLog.i('x: $x, y: $y, dx: ${_pos.dx}, dy: ${_pos.dy}'); 
+      sysLog.i('x: $x, y: $y, dx: ${_pos.dx}, dy: ${_pos.dy}');
       //x,y for cmd_vel, dx, dy for total move.
       //anyways, dx dy doesn't need at least now.
       double linX = (y/10).clamp(-robotSetting.maxSpd, robotSetting.maxSpd);
@@ -158,7 +159,7 @@ class _ControlsWidget extends State<ControlsWidget>{
       }
     });
   }
- 
+
   @override
   Widget build(BuildContext context){
     double h = devinfo!.height;
@@ -167,41 +168,57 @@ class _ControlsWidget extends State<ControlsWidget>{
     return LayoutBuilder(builder: (context, constraints) {
       return OrientationBuilder(builder: (context, orientation) {
         List<Widget> widgets = [
-          GestureDetector(
-            key: _gkey,
-            onTapUp: onTapCallback,
-            child: RosMapViewer(mapTopic: robotSetting.robotMapTopic,
-                    key: viewerKey,
-                    odomTopic: robotSetting.robotOdomTopic,
-                    tfTopic: robotSetting.robotTfTopic,
-                    mapSizeModifier: imgSizeModifier, 
-                    mapDetailCallback: mapDetailCallbackListener,
-                    posCallback: callbackListener,),
-          ),
-          SizedBox(
-              width: w - w/3,
-              height: h*0.05,
-              child: Slider.adaptive(value: imgSizeModifier,
-                onChanged: (value) {
-                  setState(() {
-                    imgSizeModifier = value;
-                    print(imgSizeModifier);
-                  });
-                },
-                min: 0.2, max: 2.0, label: imgSizeModifier.toString(),),
-          ),
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.black,
-                  width: 2,
+          Flexible(
+            flex: 20,
+            child: Column(
+            children: [
+              Flexible(
+                flex: 10,
+                child: GestureDetector(
+                    key: _gkey,
+                    onTapUp: onTapCallback,
+                    child: RosMapViewer(mapTopic: robotSetting.robotMapTopic,
+                      key: viewerKey,
+                      odomTopic: robotSetting.robotOdomTopic,
+                      tfTopic: robotSetting.robotTfTopic,
+                      mapSizeModifier: imgSizeModifier,
+                      mapDetailCallback: mapDetailCallbackListener,
+                      posCallback: callbackListener,),
                 ),
-                borderRadius: BorderRadius.circular(30),
-            ),
-            width: orientation == Orientation.landscape ? w - w/3 : null,
-            height: orientation == Orientation.portrait ? h - h/3 : null,
-            child: JoyStick(listener: stickCallback,),
+              ),
+              Flexible(
+                flex: 1,
+                child:SizedBox(
+                    width: w - w/4,
+                    height: h*0.05,
+                    child: Slider.adaptive(value: imgSizeModifier,
+                      onChanged: (value) {
+                        setState(() {
+                          imgSizeModifier = value;
+                          print(imgSizeModifier);
+                        });
+                      },
+                      min: 0.2, max: 2.0, label: imgSizeModifier.toString(),),
+                ),
+              )
+            ],
+          ),
+          ),
+          Flexible(
+            flex: 11,
+            child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    width: orientation == Orientation.landscape ? w - w/3 : null,
+                    height: orientation == Orientation.portrait ? h - h/3 : null,
+                    child: JoyStick(listener: stickCallback,),
+                  ),
           ),
         ];
         return buildDependsOrientation(widgets, orientation);

@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hills_robot_app/assets/tasks/testDelete.dart';
+import 'package:hills_robot_app/assets/tasks/remove&edit_Points.dart';
 import 'package:hills_robot_app/assets/ros_map_viewer.dart';
 import 'package:hills_robot_app/utils/utils.dart';
 
 
 final List headersData = ['Task', 'Goal', 'Assigned'];
-// final List rowDatas = List.generate(10, (index) => ['A$index', 'B$index', 'Apollo_$index']);
 final List<List> rowsData = 
     List.generate(30, (index) => ['A$index', 'B$index', 'Apollo_$index']);
 
@@ -88,7 +87,7 @@ class _TasksWidget extends State<TasksWidget> {
                 children: [
                   buildVerticalTextButton('GO', Colors.green, 120 * w / 480),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height*0.05,
+                    height: h*0.05,
                   ),
                   buildVerticalTextButton('STOP', Colors.pink, 120 * w / 480),
                 ],

@@ -1,65 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:hills_robot_app/utils/utils.dart';
 
-
-enum Examples {exam, ples}
-
-class ConfigureWidget extends StatefulWidget{
+class ConfigureWidget extends StatefulWidget {
   const ConfigureWidget({super.key});
-  // const ConfigureWidget({Key? key});
+
   @override
   State<ConfigureWidget> createState() => _ConfigureWidget();
 }
 
-class _ConfigureWidget extends State<ConfigureWidget>{
-  final Map exampleInfos = {
-    'title': ['exam', 'ples'],
-    'value': [Examples.exam, Examples.ples],
-  };
+class Item {
+  Item({
+    required this.expandedValue,
+    required this.headerValue,
+    this.isExpanded = false,
+  });
+
+  String expandedValue;
+  String headerValue;
+  bool isExpanded;
+}
+
+class _ConfigureWidget extends State<ConfigureWidget> {
+
+  List<Item> _data = [
+    Item(headerValue: 'Obstacle Settings', expandedValue: 'Obstacle Radio Buttons'),
+    Item(headerValue: 'Wheel Direction Settings', expandedValue: 'Wheel Direction Radio Buttons'),
+    Item(headerValue: 'Robot Settings', expandedValue: 'Speed and Angular Settings'),
+    Item(headerValue: 'Topic Settings', expandedValue: 'Topic Input Fields'),
+    Item(headerValue :'Robot Frame ID', expandedValue: 'Robot Frame Select')
+  ];
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
   }
 
-  void spdSliderChanged(double val){
-    setState((){
+  void spdSliderChanged(double val) {
+    setState(() {
       robotSetting.maxSpd = val;
     });
   }
 
-  void angSliderChanged(double val){
-    setState((){
+  void angSliderChanged(double val) {
+    setState(() {
       robotSetting.maxAng = val;
     });
   }
-  
-  Widget singleRadioBtnMaker<obj>(Map radioInfos, gVal, index, 
-                                  Function(obj? value) callback){
-    late Widget radio;
 
-    radio = RadioListTile<obj>(
+  Widget singleRadioBtnMaker<obj>(Map radioInfos, gVal, index, Function(obj? value) callback) {
+    return RadioListTile<obj>(
       title: Text(radioInfos['title'][index]),
       groupValue: gVal[obj],
       value: radioInfos['value'][index],
       onChanged: callback,
     );
-    return radio;
   }
 
-  Widget genericRadioBtnColumnMaker<obj>(Map radioInfos, Map gVal, 
-                                          Function(obj? value) callback){
+  Widget genericRadioBtnColumnMaker<obj>(Map radioInfos, Map gVal, Function(obj? value) callback) {
     List<Widget> radios = [];
-    for(int i = 0; i < radioInfos['title'].length; i++){
-      radios.add(singleRadioBtnMaker(radioInfos, gVal, i, callback),);
+    for (int i = 0; i < radioInfos['title'].length; i++) {
+      radios.add(singleRadioBtnMaker(radioInfos, gVal, i, callback));
     }
-    return Column(children: radios,);
+    return Column(children: radios);
   }
 
-  Container simpleTopicContainer(String label, String hintText, String value, Function(String) onChanged){
+  Container simpleTopicContainer(String label, String hintText, String value, Function(String) onChanged) {
     return Container(
       child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.3,
+        width: MediaQuery.of(context).size.width * 0.8,
         child: TextFormField(
           decoration: InputDecoration(
             labelText: label,
@@ -71,15 +79,13 @@ class _ConfigureWidget extends State<ConfigureWidget>{
       ),
     );
   }
-  
-  void _genericRadioCallback<obj>(obj? value){
+
+  void _genericRadioCallback<obj>(obj? value) {
     robotSetting.radioOptions[obj] = value;
-    if(obj == FrameID){
-      switch(robotSetting.radioOptions[obj]){
+    if (obj == FrameID) {
+      switch (robotSetting.radioOptions[obj]) {
         case FrameID.turtlebot:
           robotSetting.robotFrameList = {
-            // 'map': 'odom',
-            // 'odom': 'base_footprint',
             'map': 'base_footprint',
           };
           break;
@@ -92,91 +98,111 @@ class _ConfigureWidget extends State<ConfigureWidget>{
       }
 
       robotSetting.robotFrameFlags = [];
-      for(int i = 0; i < robotSetting.robotFrameList.length; i++){
+      for (int i = 0; i < robotSetting.robotFrameList.length; i++) {
         robotSetting.robotFrameFlags.add(false);
       }
     }
-    setState(() {
-    });
-  } //generic also good, but should be seperated for operating each action. or just swithching by object.
+    setState(() {});
+  }
 
   @override
-  Widget build(BuildContext context){
-    List<Widget> widgets = [
-      Container(
-        child: Container(
-          padding: const EdgeInsets.only(top: 15),
-          child: Column(
-            children: [
-              const Text("Obstacle Settings"),
-              genericRadioBtnColumnMaker<WhenObstacleDetects>(obstacleRadioInfos, robotSetting.radioOptions, _genericRadioCallback),
-            ],
-          ),
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: ExpansionPanelList(
+          expansionCallback: (int index, bool isExpanded) {
+            setState(() {
+              _data[index].isExpanded = isExpanded;
+            });
+          },
+          children: _data.map<ExpansionPanel>((Item item) {
+            return ExpansionPanel(
+              headerBuilder: (BuildContext context, bool isExpanded) {
+                return ListTile(
+                  title: Text(item.headerValue),
+                );
+              },
+              body: _buildPanelBody(item),
+              isExpanded: item.isExpanded,
+            );
+          }).toList(),
         ),
       ),
-      Container(
-        child: Container(
-          padding: const EdgeInsets.only(top: 15),
-          child: Column(
-            children: [
-              const Text("Wheel Direction Settings"),
-              genericRadioBtnColumnMaker<WheelDirections>(wheelDirectionInfos, robotSetting.radioOptions, _genericRadioCallback),
-            ],
-          ),
-        ),
-      ),
-      Container(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 15, bottom: 10),
-              child: const Text('Robot Settings'),
-            ),
-            const Text("Max Speed"),
-            Slider(value: robotSetting.maxSpd, 
-            onChanged: spdSliderChanged, 
-            label: robotSetting.maxSpd.toString()),
-            const Text("Max Angular"),
-            Slider(value: robotSetting.maxAng, 
-            onChanged: angSliderChanged, 
-            label: robotSetting.maxAng.toString(),
-            max: 0.8,),
-          ],
-        ),
-      ),
-      Container(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 15, bottom: 10),
-              child: const Text('Topic Settings'),
-            ),
-            const Text('Map Topic'),
-            simpleTopicContainer('Map Topic', '/map', robotSetting.robotMapTopic,
-             (value) => robotSetting.robotMapTopic = value),
-            const Text('Odom Topic'),
-            simpleTopicContainer('Odom Topic', '/odom', robotSetting.robotOdomTopic,
-             (value) => robotSetting.robotOdomTopic = value),
-            const Text('TF Topic'),
-            simpleTopicContainer('TF Topic', '/tf', robotSetting.robotTfTopic,
-             (value) => robotSetting.robotTfTopic = value),
-            const Text('Robot FrameID'),
-            genericRadioBtnColumnMaker<FrameID>(frameIDRadioInfos, 
-              robotSetting.radioOptions, _genericRadioCallback),
-          ],
-        ),
-      ),
-    ];
-    return SafeArea(child: 
-      LayoutBuilder(builder: (context, constraints) {
-        return SingleChildScrollView(child: 
-          ConstrainedBox( constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-              minWidth: constraints.maxWidth,
-          ),
-          child: Column(children: widgets),
-        ));
-      }),
     );
+  }
+
+  Widget _buildPanelBody(Item item) {
+    switch (item.headerValue) {
+      case 'Obstacle Settings':
+        return Column(
+          children: [
+            genericRadioBtnColumnMaker<WhenObstacleDetects>(
+                obstacleRadioInfos, robotSetting.radioOptions, _genericRadioCallback),
+          ],
+        );
+      case 'Wheel Direction Settings':
+        return Column(
+          children: [
+            genericRadioBtnColumnMaker<WheelDirections>(
+                wheelDirectionInfos, robotSetting.radioOptions, _genericRadioCallback),
+          ],
+        );
+      case 'Robot Settings':
+        return Column(
+          children: [
+            const Text("Max Speed"),
+            Slider(
+              value: robotSetting.maxSpd,
+              onChanged: spdSliderChanged,
+              label: robotSetting.maxSpd.toString(),
+            ),
+            const Text("Max Angular"),
+            Slider(
+              value: robotSetting.maxAng,
+              onChanged: angSliderChanged,
+              label: robotSetting.maxAng.toString(),
+              max: 0.8,
+            ),
+          ],
+        );
+      case 'Topic Settings':
+        return Column(
+          children: [
+            const Text('Map Topic'),
+            simpleTopicContainer(
+              'Map Topic',
+              '/map',
+              robotSetting.robotMapTopic,
+                  (value) => robotSetting.robotMapTopic = value,
+            ),
+            const Text('Odom Topic'),
+            simpleTopicContainer(
+              'Odom Topic',
+              '/odom',
+              robotSetting.robotOdomTopic,
+                  (value) => robotSetting.robotOdomTopic = value,
+            ),
+            const Text('TF Topic'),
+            simpleTopicContainer(
+              'TF Topic',
+              '/tf',
+              robotSetting.robotTfTopic,
+                  (value) => robotSetting.robotTfTopic = value,
+            ),
+          ],
+        );
+      case 'Robot Frame ID':
+        return Column(
+          children: [
+            genericRadioBtnColumnMaker<FrameID>(
+              frameIDRadioInfos,
+              robotSetting.radioOptions,
+              _genericRadioCallback,
+            ),
+          ],
+        );
+      default:
+        return Container();
+    }
   }
 }
