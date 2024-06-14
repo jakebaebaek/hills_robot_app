@@ -4,7 +4,7 @@ class JoystickStick extends StatelessWidget {
   final double size;
 
   const JoystickStick({
-    this.size = 50,
+    this.size =50,
     Key? key,
   }) : super(key: key);
 

@@ -20,7 +20,10 @@ class NetworkWidget extends StatefulWidget {
 
   @override
   State<NetworkWidget> createState() => _NetworkWidget();
+  // Getter for focusNode
+
 }
+
 
 class _NetworkWidget extends State<NetworkWidget> {
   final rmsKey = GlobalKey(debugLabel: 'network_rms');
@@ -33,6 +36,8 @@ class _NetworkWidget extends State<NetworkWidget> {
   static const ipPattern = r'\d[0-9.]+\d';
   final regexp = RegExp(ipPattern);
   List<Text> texts = []; // this will be the List of IP address
+  bool isLoading = false; // 로딩 상태 변수
+  final FocusNode _textFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -41,11 +46,13 @@ class _NetworkWidget extends State<NetworkWidget> {
     _oldText = initialTextValue;
     _alertTexts = const Text('');
     returnIPAddressWithInterface();
+
   }
 
   @override
   void dispose() {
     _textEditingController.dispose();
+    _textFocusNode.dispose();
     super.dispose();
   }
 
@@ -64,12 +71,11 @@ class _NetworkWidget extends State<NetworkWidget> {
     // List<Text> ipTextWidgets = [Text('My IP address', style: TextStyle(fontSize: 16),),];
     List<Text> ipTextWidgets = [
       Text('My IP address',
-          style: TextStyle(fontSize: 24,
+          style: TextStyle(
+              fontSize: 24,
               fontFamily: 'Pretendard',
               fontWeight: FontWeight.w500,
-              color: Colors.blueGrey[900]
-          )
-      ),
+              color: Colors.blueGrey[900])),
       Text('')
     ];
 
@@ -102,27 +108,49 @@ class _NetworkWidget extends State<NetworkWidget> {
         pubVel = nodehandle!.advertise<Twist>('/cmd_vel', Twist.$prototype);
         pubGoal = nodehandle!.advertise<PoseStamped>('/move_base_simple/goal', PoseStamped.$prototype);
         serverIp = InternetAddress(uri);
-        // if(!(Platform.isWindows || Platform.isLinux || Platform.isMacOS)){
-        //   showToast('Completed');
-        // }
-        setState(() {});
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            isLoading = false; // 로딩 상태 해제
+          });
+          Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
+          _showConnectionStatusDialog(true); // 연결 성공 다이얼로그 표시
+        });
       }
     } catch (e) {
       sysLog.d(e);
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          isLoading = false; // 로딩 상태 해제
+        });
+        Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
+        _showConnectionStatusDialog(false); // 연결 실패 다이얼로그 표시
+      });
     }
-    // nodehandle = await initNode(defaultNodeName, args, rosMasterUri: 'http://$uri:11311', rosIP: InternetAddress(uri));
-    // rh = RosHandler.withIp(defaultNodeName, InternetAddress(uri), args);
   }
 
   void _connectRMS([String? rTxt]) {
     var wdt = toString();
     var txt = rTxt ?? _textEditingController.text;
-    // log(txt);
-    // for(var matched in regexp.allMatches(txt)){
-    //   log('$wdt got groupt ${matched.groupCount}');
-    //   log('$wdt matched ${matched[0]}');
-    // }
-    // rh = RosHandler.withUri(defaultNodeName, 'http://$txt:11311/', []);
+    setState(() {
+      isLoading = true; // 로딩 상태 시작
+    });
+    // 키보드를 닫기 위해 포커스를 해제합니다.
+    _textFocusNode.unfocus();
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 사용자가 다이얼로그를 닫을 수 없도록 함
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("Connecting..."),
+            ],
+          ),
+        );
+      },
+    );
     _connectRos(txt);
   }
 
@@ -149,10 +177,9 @@ class _NetworkWidget extends State<NetworkWidget> {
         }
         if (value1 > 2 || value == 0) checked = true;
         if (index < splittedTxt.length) {
-          txtSublist = splittedTxt.length > 1 ?
-          List.from(splittedTxt.sublist(0, index + 1))
+          txtSublist = splittedTxt.length > 1
+              ? List.from(splittedTxt.sublist(0, index + 1))
               : List.from(splittedTxt);
-          // sysLog.d('1 txtSublist is ${txtSublist}, ${checked}');
           if (checked) {
             txtSublist.add('');
             dotted = true;
@@ -161,8 +188,6 @@ class _NetworkWidget extends State<NetworkWidget> {
         res = txtSublist.join('.');
         index += 1;
       }
-      // log('2 txtSublist is ${txtSublist}');
-      // log('splittedTxt length is ${splittedTxt.length}');
       if ('.'.allMatches(res).length > 3) {
         int a = res.lastIndexOf('.');
         res = res.substring(0, a); //remove last dot.
@@ -176,9 +201,27 @@ class _NetworkWidget extends State<NetworkWidget> {
     }
     _oldText = _textEditingController.text;
     _textEditingController.selection = tempPos;
-    setState(() {
+    setState(() {});
+  }
 
-    });
+  void _showConnectionStatusDialog(bool isSuccess) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(isSuccess ? "Success" : "Failure"),
+          content: Text(isSuccess ? "Connected to ROS successfully!" : "Failed to connect to ROS."),
+          actions: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -192,7 +235,6 @@ class _NetworkWidget extends State<NetworkWidget> {
   }
 
   Widget buildSectionEnterIP(DeviceInfo devInfo) {
-
     return Container(
       key: rmsKey,
       child: Column(
@@ -207,9 +249,11 @@ class _NetworkWidget extends State<NetworkWidget> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(padding: EdgeInsets.all(13.0),
+              Padding(
+                padding: EdgeInsets.all(13.0),
                 child: SizedBox(
                   child: TextFormField(
+                    focusNode: _textFocusNode,
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
                       hintText: "RobotSide IP addresss",
@@ -228,27 +272,27 @@ class _NetworkWidget extends State<NetworkWidget> {
               ),
               SizedBox(
                 width: devInfo.width * 0.95,
-                height: devInfo.height * 0.1,
+                height: devInfo.height * 0.05,
               ),
             ],
           ),
           SizedBox(
             height: devInfo.height * 0.09,
             child: OutlinedButton(
-                onPressed: _connectRMS,
-                child: Padding(padding: EdgeInsets.all(12.0),
-                  child: const Text(
-                      style: TextStyle(fontSize: 20), 'Connect to RMS'),)
+              onPressed: isLoading ? null : _connectRMS,
+              child: Padding(
+                padding: EdgeInsets.all(12.0),
+                child: const Text(style: TextStyle(fontSize: 20), 'Connect to RMS'),
+              ),
             ),
           ),
           SizedBox(
             width: devInfo.width,
-            height: devInfo.height * 0.1,
+            height: devInfo.height * 0.05,
           ),
           Padding(
             padding: EdgeInsets.all(10.0),
-            child:
-            nodehandle == null ||
+            child: nodehandle == null ||
                 nodehandle!.isShutdown ||
                 nodehandle!.node.nodeReady.isCompleted
                 ? const Text(style: TextStyle(fontSize: 25), '✖️Disconnected')

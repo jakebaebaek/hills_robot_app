@@ -1,11 +1,13 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'joystick.dart';
 import 'joystick_controller.dart';
 import 'joystick_stick.dart';
 import 'joystick_stick_offset_calculator.dart';
+import 'package:hills_robot_app/utils/utils.dart';
 
 /// Allow to place the joystick in any place where user click.
 /// Just need to place other widgets as child of [JoystickArea] widget.
@@ -68,12 +70,14 @@ class _JoystickTempState extends State<JoystickTemp> {
 
   @override
   Widget build(BuildContext context) {
+    double h = devinfo!.height;
+    double w = devinfo!.width;
+
     return GestureDetector(
       key: _areaKey,
       onPanStart: _startDrag,
       onPanUpdate: _updateDrag,
       onPanEnd: _endDrag,
-      // onTapDown: _showJoyStick,
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -81,28 +85,30 @@ class _JoystickTempState extends State<JoystickTemp> {
         child: Stack(
           children: [
             if (widget.child != null) Align(child: widget.child),
-            Positioned(
-              top: _joystickPos.dy,
-              left: _joystickPos.dx,
-              child: Opacity(opacity: _isTapped ? 1 : 0,
-              child: Joystick(
-                key: _joystickKey,
-                controller: _controller,
-                listener: widget.listener,
-                period: widget.period,
-                mode: widget.mode,
-                base: widget.base,
-                stick: widget.stick,
-                onStickDragStart: widget.onStickDragStart,
-                onStickDragEnd: widget.onStickDragEnd,
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Joystick(
+                    key: _joystickKey,
+                    controller: _controller,
+                    listener: widget.listener,
+                    period: widget.period,
+                    mode: widget.mode,
+                    base: widget.base,
+                    stick: widget.stick,
+                    onStickDragStart: widget.onStickDragStart,
+                    onStickDragEnd: widget.onStickDragEnd,
+                  );
+                },
               ),
-              ),
-            ),
+            )
           ],
         ),
       ),
     );
   }
+
 
   void _startDrag(DragStartDetails details) {
     final localPosition = details.localPosition;
@@ -121,7 +127,7 @@ class _JoystickTempState extends State<JoystickTemp> {
     setState(() {
       _isTapped = true;
       _joystickPos = Offset(xAlignment, yAlignment);
-      log('$xAlignment, $yAlignment, $globalPosition, $size, $localPosition');
+      sysLog.i("아싸아싸아싸아쌌아쌍싸아쌍$xAlignment, $yAlignment\n$globalPosition.dx, $globalPosition.dy, localPosition : $localPosition", );
     });
     _controller.start(details.globalPosition);
   }
@@ -138,5 +144,4 @@ class _JoystickTempState extends State<JoystickTemp> {
 
     _controller.end();
   }
-
 }

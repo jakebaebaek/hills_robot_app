@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hills_robot_app/assets/tasks/remove&edit_Points.dart';
+import 'package:hills_robot_app/assets/tasks/pointList.dart';
 import 'package:hills_robot_app/utils/constants.dart';
 
 Widget buildVerticalTextButton(String text, Color backgroundColor, double width) {
