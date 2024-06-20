@@ -9,7 +9,7 @@ import 'package:dartros_msgs/nav_msgs/msgs.dart';
 import 'package:dartros_msgs/tf2_msgs/msgs.dart';
 import 'package:image/image.dart' as imglib;
 
-import 'package:hills_robot_app/utils/constants.dart';
+import 'package:hills_robot_app/utils/utils.dart';
 
 	
 class ImageDetail {
@@ -79,7 +79,7 @@ class RosMapViewer extends StatefulWidget{
 }
 
 class _RosMapViewer extends State<RosMapViewer>{
-  geo.Vector3? robotPos;
+  geo.Vector3? robotPos; //tf 로봇 데이터
   geo.Vector3 robotVec = geo.Vector3(x:0,y:0,z:0);
   late String mapTopic;
   // late String odomTopic;

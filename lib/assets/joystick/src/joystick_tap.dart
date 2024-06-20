@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'joystick.dart';
 import 'joystick_controller.dart';
@@ -85,8 +86,7 @@ class _JoystickTempState extends State<JoystickTemp> {
         child: Stack(
           children: [
             if (widget.child != null) Align(child: widget.child),
-            Align(
-              alignment: Alignment.bottomCenter,
+            Center(
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return Joystick(

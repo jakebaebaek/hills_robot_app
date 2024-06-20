@@ -1,13 +1,13 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:hills_robot_app/assets/tasks/pointList.dart';
 import 'package:hills_robot_app/assets/ros_map_viewer.dart';
 import 'package:hills_robot_app/utils/utils.dart';
 
-
-final List headersData = ['Task', 'Goal', 'Assigned'];
-final List<List> rowsData = 
-    List.generate(30, (index) => ['A$index', 'B$index', 'Apollo_$index']);
+// final List headersData = ['Task', 'Goal', 'Assigned'];
+// final List<List> rowsData =
+//     List.generate(30, (index) => ['A$index', 'B$index', 'Apollo_$index']);
 
 class TasksWidget extends StatefulWidget{
   const TasksWidget({super.key});
@@ -15,6 +15,7 @@ class TasksWidget extends StatefulWidget{
   @override
   State<TasksWidget> createState() => _TasksWidget();
 }
+
 
 class _TasksWidget extends State<TasksWidget> {
   // const _TasksWidget({super.key});  
@@ -31,21 +32,21 @@ class _TasksWidget extends State<TasksWidget> {
     }
   }
 
-  Widget buildVerticalTextButton(String text, Color backgroundColor, double width) {
-  return ElevatedButton(
-    onPressed: () {},
-    child: Text(
-      text,
-      style: TextStyle(fontSize: 30),
-    ),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: backgroundColor,
-      shape: const StadiumBorder(),
-    ).copyWith(
-      minimumSize: MaterialStateProperty.all(Size(width, 70)),
-    ),
-  );
-}
+  Widget buildTextButton(String text, Color backgroundColor, double width) {
+    return ElevatedButton(
+      onPressed: () {},
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 25, color: Colors.grey[300]),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shape: const StadiumBorder(),
+        minimumSize: Size(width, 55), // Size 생성자를 올바르게 사용
+      ),
+    );
+  }
+
 
   @override
   void dispose(){
@@ -74,26 +75,25 @@ class _TasksWidget extends State<TasksWidget> {
               RosMapViewer(posCallback: callbackListener),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: 280 * w / 480,
+          SizedBox(
                 height: 400 * h / 720,
-                child:PointsTableWidget(),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  buildVerticalTextButton('GO', Colors.green, 120 * w / 480),
-                  SizedBox(
-                    height: h*0.05,
-                  ),
-                  buildVerticalTextButton('STOP', Colors.pink, 120 * w / 480),
-                ],
-              )
-            ],
-          )
+                child:Stack(
+                      children: <Widget>[
+                        PointsTableWidget(),
+                        Positioned(
+                          top: 0,
+                          left: w * 0.02,
+                          child: buildTextButton('GO', Colors.green, 110),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: w * 0.02,
+                            child: buildTextButton('STOP', Colors.pink,110),
+                        )
+                      ],
+                )
+          ),
+              //,STOP BUTTONS
         ];
         return buildDependsOrientation(widgets, orientation);
       });

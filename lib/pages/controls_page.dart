@@ -12,7 +12,6 @@ import 'package:flutter/widgets.dart';
 import 'package:hills_robot_app/assets/joystick_wt.dart';
 import 'package:hills_robot_app/utils/utils.dart';
 import 'package:hills_robot_app/assets/ros_map_viewer.dart';
-import 'package:hills_robot_app/assets/joystick/joystick_lib.dart';
 
 bool debugOffline = false;
 double imgSizeModifier = 1.0;
@@ -175,7 +174,7 @@ class _ControlsWidget extends State<ControlsWidget>{
             ),
           ),
           Align(
-            alignment: Alignment.bottomCenter,
+            alignment: (w >= h) ? const Alignment(0.5, 0.2) : Alignment.bottomCenter,
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 final joystickSize = min(constraints.maxWidth, constraints.maxHeight) * 0.2;

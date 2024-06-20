@@ -24,9 +24,7 @@ class JoyStick extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return SafeArea(
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        // alignment: const Alignment(0, 0.8),
+      child: Center(
         child: JoystickTemp(
           base: const JoystickBase(
             drawArrows: false,

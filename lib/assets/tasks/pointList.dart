@@ -11,14 +11,13 @@ class PointsTableWidget extends StatefulWidget {
 }
 
 class _PointsTableWidgetState extends State<PointsTableWidget> {
-
   late List<String> points;
   int? selectedRowIndex;
 
   void addPoint() {
     setState(() {
-      int newIndex = points.length - 1;  // '+'를 제외한 새 인덱스
-      points.insert(newIndex, '${widget.title}_$newIndex');
+      int newIndex = points.length - 1; // '+'를 제외한 새 인덱스
+      points.insert(newIndex, 'New ${widget.title}');
     });
   }
 
@@ -48,46 +47,60 @@ class _PointsTableWidgetState extends State<PointsTableWidget> {
     );
   }
 
+  Widget buildTextButton(String text, Color backgroundColor, double width) {
+    return ElevatedButton(
+      onPressed: () {},
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 30),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shape: const StadiumBorder(),
+        minimumSize: Size(width, 70), // Size 생성자를 올바르게 사용
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    points = List.generate(3, (index) => '${widget.title}_$index')..add('+');
+    points = List.generate(1, (index) => '+');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Icon(Icons.list,),
-                Text(widget.title + ' List'),
-                Opacity(opacity: 0, child: Icon(Icons.menu))
-              ],
-            ),
+        title: Text(widget.title + ' List'),
         centerTitle: true,
         backgroundColor: Colors.white10,
-        toolbarHeight: 30,
+        toolbarHeight: 55,
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical, // 세로 스크롤
-        child: Table(
-          columnWidths: const <int, TableColumnWidth>{
-            0: FlexColumnWidth(),
-          },
-          border: TableBorder.all(color: Colors.black), // 모든 셀에 테두리 추가
-          children: List<TableRow>.generate(
-            points.length,
-                (index) {
-              return TableRow(
-                decoration: BoxDecoration(
-                  color: selectedRowIndex == index ? Colors.purple[50] : Colors.transparent,
-                ),
-                children: [
-                  TableCell(
-                      verticalAlignment: TableCellVerticalAlignment.middle, // 세로 중앙 정렬
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black), // Table 전체에 테두리 추가
+          ),
+          child: Table(
+            columnWidths: const <int, TableColumnWidth>{
+              0: FlexColumnWidth(),
+            },
+            border: TableBorder.all(color: Colors.black), // 모든 셀에 테두리 추가
+            children: List<TableRow>.generate(
+              points.length,
+                  (index) {
+                return TableRow(
+                  decoration: BoxDecoration(
+                    color: selectedRowIndex == index
+                        ? Colors.purple[50]
+                        : Colors.transparent,
+                  ),
+                  children: [
+                    TableCell(
+                      verticalAlignment: TableCellVerticalAlignment.middle,
+                      // 세로 중앙 정렬
                       child: InkWell(
                         onTap: () {
                           setState(() {
@@ -102,16 +115,23 @@ class _PointsTableWidgetState extends State<PointsTableWidget> {
                             ? Container(
                           height: 50,
                           alignment: Alignment.center,
-                          child: Text(points[index], style: TextStyle(fontSize: 16)),
+                          padding: EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            points[index],
+                            style: TextStyle(fontSize: 16),
+                          ),
                         )
                             : Dismissible(
-                          key: UniqueKey(), // 고유 키를 사용하여 충돌 방지
-                          direction: DismissDirection.horizontal,  // 양방향 스와이프 활성화
+                          key: UniqueKey(),
+                          // 고유 키를 사용하여 충돌 방지
+                          direction: DismissDirection.horizontal,
+                          // 양방향 스와이프 활성화
                           onDismissed: (direction) {
-                            if (direction == DismissDirection.endToStart) {
-                              editPoint(index);  // 오른쪽에서 왼쪽으로 스와이프 시 수정
+                            if (direction ==
+                                DismissDirection.endToStart) {
+                              editPoint(index); // 오른쪽에서 왼쪽으로 스와이프 시 수정
                             } else {
-                              removePoint(index);  // 왼쪽에서 오른쪽으로 스와이프 시 삭제
+                              removePoint(index); // 왼쪽에서 오른쪽으로 스와이프 시 삭제
                             }
                           },
                           background: Container(
@@ -129,14 +149,19 @@ class _PointsTableWidgetState extends State<PointsTableWidget> {
                           child: Container(
                             height: 50,
                             alignment: Alignment.center,
-                            child: Text(points[index], style: TextStyle(fontSize: 16)),
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              points[index],
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
-                      )
-                  ),
-                ],
-              );
-            },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

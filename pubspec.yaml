@@ -71,6 +71,8 @@ flutter:
     - lib/assets/images/occumap.png
     - lib/assets/images/loading.gif
     - lib/assets/images/logo.png
+    - lib/assets/images/Robot ICON.png
+    - lib/assets/images/Robot ICON_DarkMode.png
   fonts:
     - family: Pretendard
       fonts:
